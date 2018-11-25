@@ -93,3 +93,16 @@ class Cuboid():
                     cv2.line(buffer, pt1, pt2, 255, thickness)
 
         return buffer
+
+
+    def perspective_render(self, camera, width, height, thickness):
+        """ Renders the cube as a wireframe object using perspective projection.
+
+        :param camera: Tuple consisting of position e, gaze direction g and up-vector t.
+        :param width:  Width of the view plane.
+        :param height: Height of the view plane.
+        :param thickness: Integer denoting thickness of the wireframe.
+        :return: Numpy array of shape (height, width, 1).
+        """
+        #TODO: implement!
+        pass

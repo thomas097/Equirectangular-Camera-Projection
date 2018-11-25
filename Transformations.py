@@ -77,3 +77,6 @@ def scaling_matrix(sx, sy, sz):
                   [0,  0,  sz, 0],
                   [0,  0,  0,  1]])
     return S
+
+
+# TODO: implement viewing transformations (camera transform, orthographic, etc.)

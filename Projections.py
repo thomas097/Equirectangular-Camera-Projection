@@ -16,6 +16,7 @@ def equirectangular_projection(point, width, dtype=np.int16):
 
     :param point:  Numpy array of point representing (x, y, z)^T.
     :param width:  Width of the view plane in pixels.
+    :param dtype:  Dtype of the output array (default: 16-bit integer).
     :return:       Numpy array of point as (u, v) pixel coordinates.
     """
     x, y, z = point
@@ -30,3 +31,17 @@ def equirectangular_projection(point, width, dtype=np.int16):
     v = (width / 2) * (lat + (np.pi / 2)) / np.pi
 
     return np.array([u, v], dtype=dtype)
+
+
+def perspective_projection(point, width, height, dtype=np.uint16):
+    """ Projects a point in world coordinates onto the view plane using a
+        perspective projection.
+
+    :param point:  Numpy array of point representing (x, y, z)^T.
+    :param width:  Width of the view plane in pixels.
+    :param height: Height of the view plane in pixels.
+    :param dtype:  Dtype of the output array (default: 16-bit integer).
+    :return:       Numpy array of point as (u, v) pixel coordinates.
+    """
+    # TODO: implement!
+    pass
