@@ -1,1 +1,1 @@
-# Equirectangular-Camera-Projection
+# Equirectangular Camera Projection
