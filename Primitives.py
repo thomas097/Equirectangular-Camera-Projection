@@ -16,6 +16,9 @@ from Projections import equirectangular_projection
 
 class Cuboid():
     def __init__(self):
+        """ The Cuboid class is used to construct the environment bounding box
+            and to represent box-like objects in the environment.
+        """
         # Construct initial transformation matrices.
         self.M_scl = scaling_matrix(1, 1, 1)
         self.M_rot = rotation_matrix(0, 0, 0)
@@ -57,7 +60,7 @@ class Cuboid():
         self.M_scl = scaling_matrix(sx, sy, sz)
 
 
-    def equirectangular_render(self, width, steps = 24, thickness = 1):
+    def equirectangular_render(self, width, steps = 16, thickness = 1):
         """ Renders the cube as a wireframe object in equirectangular format.
 
         :param width:     Width of the view plane (height being width/2).
@@ -70,31 +73,23 @@ class Cuboid():
         verts = M.dot(self.verts)[:3].T
 
         # Initialize frame buffer with 2:1 aspect ratio.
-        buffer = np.zeros((width // 2, width, 1), dtype=np.uint8)
+        buffer = np.zeros((width // 2, width, 1), dtype = np.uint8)
 
         # For each edge of the cube...
-        thres = width // 4
         for i, j in self.edges:
             # Interpolate additional points between corner points.
             v1, v2 = verts[i], verts[j]
             pts3D = [s * v1 + (1 - s) * v2 for s in np.linspace(0, 1, steps)]
 
-            # Project each point onto equirectangular view plane.
+            # Project each point onto unwrapped equirectangular view cylinder.
             pts2D = [equirectangular_projection(p, width) for p in pts3D]
 
-            # Draw line segments...
+            # Draw the line segments between the projected edge points.
             for k in range(steps-1):
-                x0, y0 = pts2D[k]
-                x1, y1 = pts2D[k + 1]
-                # Prevent lines from being drawn all the way across.
-                if abs(x1-x0) < thres:
-                    cv2.line(buffer, (x0, y0), (x1, y1), 255, thickness)
+                pt1, pt2 = tuple(pts2D[k]), tuple(pts2D[k + 1])
+
+                # Prevent lines from being drawn all the way across the image.
+                if abs(pt2[0] - pt1[0]) < (width // 2):
+                    cv2.line(buffer, pt1, pt2, 255, thickness)
 
         return buffer
-
-
-c = Cuboid()
-render = c.equirectangular_render(1200)
-cv2.imshow('', render)
-cv2.waitKey(0)
-

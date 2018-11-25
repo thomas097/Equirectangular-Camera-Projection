@@ -12,17 +12,24 @@ import numpy as np
 
 def rotation_matrix(rx, ry, rz):
     """ Constructs 4D homogeneous rotation matrix given the rotation angles
-        (radians) around the x, y and z-axis. Rotation is implemented in
+        (degrees) around the x, y and z-axis. Rotation is implemented in
         XYZ order.
 
-    :param rx: Rotation around the x-axis.
-    :param ry: Rotation around the y-axis.
-    :param rz: Rotation around the z-axis.
+    :param rx: Rotation around the x-axis in degrees.
+    :param ry: Rotation around the y-axis in degrees.
+    :param rz: Rotation around the z-axis in degrees.
     :return:   4x4 matrix rotation matrix.
     """
+    # Convert from degrees to radians.
+    rx = np.pi * rx / 180
+    ry = np.pi * ry / 180
+    rz = np.pi * rz / 180
+
+    # Pre-compute sine and cosine of angles.
     cx, cy, cz = np.cos([rx, ry, rz])
     sx, sy, sz = np.sin([rx, ry, rz])
 
+    # Set up euler rotations.
     Rx = np.array([[1, 0,  0,   0],
                    [0, cx, -sx, 0],
                    [0, sx, cx,  0],
