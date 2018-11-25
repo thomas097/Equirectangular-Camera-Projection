@@ -1,12 +1,13 @@
-import numpy as np
-
-
 """
 Project:      Equirectangular Camera Mapping
-Date:         25 nov 2018
-Name:         Thomas Bellucci
-Description:  This file contains the projection method(s) used in the project.
+Name:         Projections.py
+Date:         November 25th, 2018.
+Author:       Thomas Bellucci
+Description:  The projection method(s) used for rendering objects / primitives
+              in the viewport.
 """
+
+import numpy as np
 
 
 def equirectangular_projection(point, width, dtype=np.int16):
@@ -15,7 +16,7 @@ def equirectangular_projection(point, width, dtype=np.int16):
 
     :param point:  Numpy array of point representing (x, y, z)^T.
     :param width:  Width of the view plane in pixels.
-    :return:       Numpy array of point in spherical coordinates.
+    :return:       Numpy array of point as (u, v) pixel coordinates.
     """
     x, y, z = point
 

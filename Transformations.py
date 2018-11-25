@@ -1,13 +1,13 @@
-import numpy as np
-
-
 """
 Project:      Equirectangular Camera Mapping
-Date:         25 nov 2018
-Name:         Thomas Bellucci
-Description:  This file contains all transformation matrices required for 
-              primitive (e.g. cube) manipulation.
+Name:         Transformations.py
+Date:         November 25th, 2018.
+Author:       Thomas Bellucci
+Description:  Transformation matrices required for object / primitive
+              manipulation.
 """
+
+import numpy as np
 
 
 def rotation_matrix(rx, ry, rz):
