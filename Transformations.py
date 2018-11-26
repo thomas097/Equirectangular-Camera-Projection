@@ -1,11 +1,11 @@
 """
 Project:      Equirectangular Camera Mapping
 Name:         Transformations.py
-Date:         November 25th, 2018.
+Date:         November 26th, 2018.
 Author:       Thomas Bellucci
 Description:  Transformation matrices / projection functions required for the
               manipulation and viewing of objects in the 3D environment and
-              viewport.
+              2D viewport.
 """
 
 import numpy as np
@@ -85,9 +85,9 @@ def camera_matrix(e, p, t):
     """ Constructs a 4D homogeneous camera matrix used to convert points
         defined in XYZ world coordinates into UVW camera coordinates.
 
-    :param e: Position of the camera in world coordinates.
-    :param p: Point in space the camera is looking at (lookat).
-    :param t: Up-vector.
+    :param e: Numpy array representing the position of the camera in world coordinates.
+    :param p: Numpy array representing a look-at point in space.
+    :param t: Numpy array representing the up-vector of the camera.
     :return:  4x4 camera matrix.
     """
     # Translates all points such that the camera is centered at the origin.
@@ -108,11 +108,10 @@ def camera_matrix(e, p, t):
                   [v[0], v[1], v[2], 0],
                   [w[0], w[1], w[2], 0],
                   [   0,    0,    0, 1]])
-
     return R.dot(T)
 
 
-def orthographic_projection_matrix(width, height, w = 5, h = 5, n = 0.01, f = 5):
+def orthographic_projection_matrix(width, height, w=5, h=5, n=0.01, f=5):
     """ Constructs a 4D homogeneous orthographic projection which takes the
         orthographic view volume in camera coordinates and projects points in
         the z-direction onto the view plane.
@@ -140,15 +139,19 @@ def orthographic_projection_matrix(width, height, w = 5, h = 5, n = 0.01, f = 5)
     return Mvp.dot(Morth)
 
 
-def equirectangular_projection(point, width, dtype=np.int16):
-    """ Projects a point in camera coordinates using equirectangular projection
-        onto the 2:1 view plane defined by longitude and latitude coordinates.
+def equirectangular_transformation(point, width, height=None, dtype=np.float32):
+    """ Transforms a point in camera coordinates using equirectangular
+        projection onto the 2:1 view cylinder defined by longitude, latitude
+        and radius coordinates.
 
     :param point:  Numpy array of point representing (x, y, z)^T.
-    :param width:  Width of the view plane in pixels.
-    :param dtype:  Dtype of the output array (default: 16-bit integer).
-    :return:       Numpy array of point as (u, v) pixel coordinates.
+    :param width:  Width of the view cylinder in pixels.
+    :param height: Height of the view cylinder in pixels (defaults to width/2).
+    :param dtype:  Dtype of the output array (defaults to np.float16).
+    :return:       Numpy array of point as (u, v, w) pixel coordinates.
     """
+    if height is None:
+        height = width / 2
     x, y, z = point
 
     # Convert point to spherical coordinates (radius, longitude, latitude)^T.
@@ -158,7 +161,7 @@ def equirectangular_projection(point, width, dtype=np.int16):
 
     # Apply window transformation to correct value ranges.
     u = width * (lon + np.pi) / (2 * np.pi)
-    v = (width / 2) * (lat + (np.pi / 2)) / np.pi
+    v = height * (lat + (np.pi / 2)) / np.pi
 
-    return np.array([u, v], dtype=dtype)
+    return np.array([u, v, rad], dtype=dtype)
 
