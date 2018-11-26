@@ -10,8 +10,7 @@ import numpy as np
 import cv2
 import matplotlib.pyplot as plt
 
-from Transformations import rotation_matrix, translation_matrix, scaling_matrix
-from Projections import equirectangular_projection
+from Transformations import *
 
 
 class Cuboid():
@@ -95,14 +94,51 @@ class Cuboid():
         return buffer
 
 
-    def perspective_render(self, camera, width, height, thickness):
+    def orthographic_render(self, width, height, camera_view = "birds eye", thickness = 1):
         """ Renders the cube as a wireframe object using perspective projection.
 
-        :param camera: Tuple consisting of position e, gaze direction g and up-vector t.
-        :param width:  Width of the view plane.
-        :param height: Height of the view plane.
-        :param thickness: Integer denoting thickness of the wireframe.
-        :return: Numpy array of shape (height, width, 1).
+        :param width:       Width of the view plane.
+        :param height:      Height of the view plane.
+        :param camera_view: String denoting view (either "birds eye" or "top down").
+        :param thickness:   Integer denoting thickness of the wireframe.
+        :return:            Numpy array of shape (height, width, 1).
         """
-        #TODO: implement!
-        pass
+
+        # Select camera position and orientation given 'camera_view' parameter.
+        e, p, t = None, None, None
+        if camera_view == "birds eye":
+            e = np.array([-0.5, 0.7, 1])
+            p = np.array([0, 0, 0])
+            t = np.array([0, 1, 0])
+        elif camera_view == "top down":
+            e = np.array([1, 0, 0])
+            p = np.array([0, 0, 0])
+            t = np.array([0, 1, 0])
+        else:
+            raise Exception("ERROR: No such view available.")
+
+        # Construct matrices for orthographic transformation.
+        Mc = camera_matrix(e, p, t)
+        Mo = orthographic_projection_matrix(width, height)
+        M = Mo.dot(Mc)
+
+        # Initialize frame buffer of (height, width, 1).
+        buffer = np.zeros((height, width, 1), dtype=np.uint8)
+
+        # For each edge of the cube...
+        for i, j in self.edges:
+            pt1, pt2 = self.verts[:, i], self.verts[:, j]
+
+            # Project vertices onto view plane.
+            pt1, pt2 = M.dot(pt1), M.dot(pt2)
+            pt1 = np.int16(pt1[:2] / pt1[3])
+            pt2 = np.int16(pt2[:2] / pt2[3])
+
+            # Rasterize line in frame buffer.
+            if np.min(pt1) >= 0 and np.min(pt2) >= 0:
+                cv2.line(buffer, tuple(pt1), tuple(pt2), 255, thickness)
+
+        return buffer
+
+
+# TODO change to returning a list of line segments to draw to allow a z-buffer to be implemented
