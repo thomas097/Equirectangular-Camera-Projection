@@ -119,14 +119,14 @@ class Cuboid():
         else:
             raise Exception("{}: No such view available.".format(camera_view))
 
-        # Transform vertices to the desired location, scale and orientation.
-        M = self.M_loc.dot(self.M_rot).dot(self.M_scl)
-        verts = M.dot(self.verts).T
-
         # Construct matrices for orthographic transformation.
-        Mc = camera_matrix(e, p, t)
-        Mo = orthographic_projection_matrix(width, height)
-        M = Mo.dot(Mc)
+        M_cam = camera_matrix(e, p, t)
+        M_orth = orthographic_projection_matrix(width, height)
+
+        # Transform vertices to the desired location, scale and orientation and
+        # position relative to the camera.
+        M = M_orth.dot(M_cam).dot(self.M_loc).dot(self.M_rot).dot(self.M_scl)
+        verts = M.dot(self.verts)[:3].T
 
         # Initialize lst to maintain segments.
         line_segments = []
@@ -134,9 +134,6 @@ class Cuboid():
         # For each edge of the cube...
         for i, j in self.edges:
             pt1, pt2 = verts[i], verts[j]
-
-            # Project cube corners onto view plane.
-            pt1, pt2 = M.dot(pt1)[:3], M.dot(pt2)[:3]
 
             # Add edge to list of line segments.
             line_segments.append((tuple(pt1), tuple(pt2)))

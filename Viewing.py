@@ -83,7 +83,7 @@ class Viewer():
         # Initialize frame-buffer with zeros.
         self.frame_buffer = np.zeros((height, width, 3))
 
-        # Initialize the depth-buffer with infinities.
+        # Initialize the depth-buffer and set all entries to infinity.
         self.depth_buffer = -np.inf * np.ones((height, width, 1))
 
         # Iterate through objects...
@@ -118,7 +118,7 @@ cube3.set_scale(2, 1, 1)
 
 
 view = Viewer()
-im = view.wireframe_render(600, 600, [cube1, cube2, cube3], [(0, 255, 0), (255, 0, 0), (0, 0, 255)], "birdseye")
+im = view.wireframe_render(600, 600, [cube1, cube2, cube3], [(0, 255, 0), (255, 0, 0), (0, 0, 255)], "top down")
 
 cv2.imshow('', im)
 cv2.waitKey(0)
