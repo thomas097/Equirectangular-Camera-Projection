@@ -23,49 +23,53 @@ class Viewer():
         self.depth_buffer = None
 
 
-    def __draw_line(self, pt0, pt1, color):
+    def __draw_line(self, p1, p2, color):
         """ Draws a line in the frame buffer making sure to draw near pixel last
             using the depth buffer.
 
-        :param pt0:       First point.
-        :param pt1:       Second point.
-        :param color:     The RGB color to use for the line.
-        :return:          None
+        :param p1:    First point (x, y, z)^T.
+        :param p2:    Second point (x, y, z)^T.
+        :param color: The RGB color to use for the line.
+        :return:      None
         """
         # determine size of buffer
         h, w = self.depth_buffer.shape[:2]
 
         # Define parametric line P + t*D
-        P = np.array(pt0)
-        D = np.array(pt1) - P
+        P = np.array(p1)
+        D = np.array(p2) - P
 
-        # Draw lines that are more horizontal than vertical (dx > dy).
+        # Draw lines, where dx > dy.
         if abs(D[0]) > abs(D[1]):
             D = D / abs(D[0])
 
-            x0, x1 = int(min(pt1[0], pt0[0])), int(max(pt1[0], pt0[0]))
-            for _ in range(x0, x1):
+            x0, x1 = int(min(p2[0], p1[0])), int(max(p2[0], p1[0]))
+            for _ in range(x0, x1 + 1):
                 x, y, z = P.astype(int)
                 z = P[2]
-                if 0 <= y < h and 0 <= x < w and z > self.depth_buffer[y, x]:
-                    self.frame_buffer[y, x] = color
-                    self.depth_buffer[y, x] = z
+                if 0 <= y < h and 0 <= x < w:
+                    if z > self.depth_buffer[y, x]:
+                        self.frame_buffer[y, x] = color
+                        self.depth_buffer[y, x] = z
+                else:
+                    return
                 P += D
-                x, y, z = P
 
         # Draw the remaining (vertical?) lines, where dx < dy.
         elif abs(D[0]) < abs(D[1]):
             D = D / abs(D[1])
 
-            y0, y1 = int(min(pt1[1], pt0[1])), int(max(pt1[1], pt0[1]))
-            for _ in range(y0, y1):
+            y0, y1 = int(min(p2[1], p1[1])), int(max(p2[1], p1[1]))
+            for _ in range(y0, y1 + 1):
                 x, y, _ = P.astype(int)
                 z = P[2]
-                if 0 <= y < h and 0 <= x < w and z > self.depth_buffer[y, x]:
-                    self.frame_buffer[y, x] = color
-                    self.depth_buffer[y, x] = z
+                if 0 <= y < h and 0 <= x < w:
+                    if z > self.depth_buffer[y, x]:
+                        self.frame_buffer[y, x] = color
+                        self.depth_buffer[y, x] = z
+                else:
+                    return
                 P += D
-                x, y, z = P
 
 
     def wireframe_render(self, width, height, objects, colors, camera_view, steps = 32):
@@ -96,8 +100,8 @@ class Viewer():
                 pts = obj.orthographic_fragments(width, height, camera_view)
 
             # Iterate through the line segments required to draw the object.
-            for pt0, pt1 in pts:
-                self.__draw_line(pt0, pt1, color)
+            for p1, p2 in pts:
+                self.__draw_line(p1, p2, color)
 
         return self.frame_buffer
 
@@ -118,7 +122,7 @@ cube3.set_scale(2, 1, 1)
 
 
 view = Viewer()
-im = view.wireframe_render(600, 600, [cube1, cube2, cube3], [(0, 255, 0), (255, 0, 0), (0, 0, 255)], "top down")
+im = view.wireframe_render(600, 600, [cube3, cube1, cube2], [(0, 255, 0), (255, 0, 0), (0, 0, 255)], "top down")
 
 cv2.imshow('', im)
 cv2.waitKey(0)
